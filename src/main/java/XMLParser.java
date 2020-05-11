@@ -15,7 +15,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.mysql.jdbc.Driver;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -25,27 +24,39 @@ import java.sql.SQLException;
 public class XMLParser implements Parameters{
 
     List<Movie> Movies;
+    List<Star> Stars;
+    List<Sim> Sims;
     Document dom;
 
     public XMLParser() {
         //create a list to hold the employee objects
         Movies = new ArrayList<>();
+        Stars = new ArrayList<>();
+        Sims = new ArrayList<>();
     }
 
-    public void runExample() {
+    public void runParser() {
 
         //parse the xml file and get the dom object
-        parseXmlFile();
+        //parseXmlFile("data/mains243.xml");
 
         //get each employee element and create a Employee object
-        parseDocument();
+        //parseMovies();
+
+        //parseXmlFile("data/actors63.xml");
+
+        //parseStars();
+
+        parseXmlFile("data/casts124.xml");
+
+        parseCasts();
 
         //Iterate through the list and print the data
         printData();
 
     }
 
-    private void parseXmlFile() {
+    private void parseXmlFile(String path) {
         //get the factory
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
@@ -55,7 +66,7 @@ public class XMLParser implements Parameters{
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             //parse using builder to get DOM representation of the XML file
-            dom = db.parse("data/mains243.xml");
+            dom = db.parse(path);
 
         } catch (ParserConfigurationException pce) {
             pce.printStackTrace();
@@ -92,7 +103,7 @@ public class XMLParser implements Parameters{
         return genreCodes;
     }
 
-    private void parseDocument() {
+    private void parseMovies() {
         HashMap<String,String> genreCodes = getCodes();
 
         //get the root elememt
@@ -138,8 +149,80 @@ public class XMLParser implements Parameters{
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private void parseStars() {
+        //get the root elememt
+        Element docEle = dom.getDocumentElement();
+
+        //get a nodelist of <directorfilms> elements
+        String currentName;
+        int currentBirthyear;
+
+        Star s;
+
+        NodeList na = docEle.getElementsByTagName("actor");
+        if (na != null && na.getLength() > 0) {
+            for (int i = 0; i < na.getLength(); i++) {
+
+                //get the directorfilm element
+                Element actor = (Element) na.item(i);
+
+                currentName = getTextValue(actor,"stagename");
+                currentBirthyear = getIntValue(actor,"dob");
 
 
+                if (currentName!=null) {
+                    s = new Star(currentName,currentBirthyear);
+                    Stars.add(s);
+
+                }
+            }
+        }
+    }
+
+    private void parseCasts() {
+        //get the root elememt
+        Element docEle = dom.getDocumentElement();
+
+        //get a nodelist of <directorfilms> elements
+        String currentMovie;
+        String currentStar;
+
+        Sim sm;
+
+        NodeList ndf = docEle.getElementsByTagName("dirfilms");
+        if (ndf != null && ndf.getLength() > 0) {
+            for (int i = 0; i < ndf.getLength(); i++) {
+
+                //get the directorfilm element
+                Element dfl = (Element) ndf.item(i);
+
+                NodeList nf = dfl.getElementsByTagName("filmc");
+                if (nf != null && nf.getLength() > 0) {
+                    for (int j = 0; j < nf.getLength(); j++) {
+
+                        Element film = (Element) nf.item(j);
+
+                        NodeList nc = film.getElementsByTagName("m");
+                        if (nc!=null && nc.getLength() >0){
+                            for (int k = 0; k < nc.getLength(); k++) {
+
+                                Element cast = (Element) nc.item(k);
+
+                                currentMovie = getTextValue(cast, "t");
+                                currentStar = getTextValue(cast, "a");
+
+                                if (currentMovie != null && currentStar != null && !(currentStar.equals("s a"))) {
+                                    sm = new Sim(currentStar, currentMovie);
+                                    Sims.add(sm);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -193,19 +276,19 @@ public class XMLParser implements Parameters{
      */
     private void printData() {
 
-        System.out.println("No of Employees '" + Movies.size() + "'.");
-
-        Iterator<Movie> it = Movies.iterator();
+        //Iterator<Movie> it = Movies.iterator();
+        Iterator<Sim> it = Sims.iterator();
         while (it.hasNext()) {
             System.out.println(it.next().toString());
         }
+        System.out.println("No of Sims '" + Sims.size() + "'.");
     }
 
     public static void main(String[] args) {
-
+        /*
         Connection conn = null;
-        Class.forName("com.mysql.jdbc.Driver").newInstance();
-        String jdbcURL="jdbc:mysql://localhost:3306/<DB NAME>";
+        Driver d=new com.mysql.jdbc.Driver();
+        DriverManager.registerDriver(d);
 
 
         // Connect to the test database
@@ -220,13 +303,15 @@ public class XMLParser implements Parameters{
         }
         catch(Exception e){
             System.out.println("sql Error");
+            int j = 6;
         }
+        */
 
         //create an instance
         XMLParser dpe = new XMLParser();
 
         //call run example
-        dpe.runExample();
+        dpe.runParser();
     }
 
 }
