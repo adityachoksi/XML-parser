@@ -189,6 +189,7 @@ public class XMLParser implements Parameters{
 
         //get a nodelist of <directorfilms> elements
         String currentMovie;
+        String currentDirector;
         String currentStar;
 
         Sim sm;
@@ -199,6 +200,8 @@ public class XMLParser implements Parameters{
 
                 //get the directorfilm element
                 Element dfl = (Element) ndf.item(i);
+                currentDirector = getTextValue(dfl,"is");
+
 
                 NodeList nf = dfl.getElementsByTagName("filmc");
                 if (nf != null && nf.getLength() > 0) {
@@ -216,7 +219,7 @@ public class XMLParser implements Parameters{
                                 currentStar = getTextValue(cast, "a");
 
                                 if (currentMovie != null && currentStar != null && !(currentStar.equals("s a"))) {
-                                    sm = new Sim(currentStar, currentMovie);
+                                    sm = new Sim(currentStar, currentMovie, currentDirector);
                                     Sims.add(sm);
                                 }
                             }
@@ -301,7 +304,6 @@ public class XMLParser implements Parameters{
         }
         catch(Exception e){
             System.out.println("sql Error");
-            int j = 6;
         }
 
 
