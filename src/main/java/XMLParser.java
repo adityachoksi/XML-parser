@@ -284,11 +284,9 @@ public class XMLParser implements Parameters{
         System.out.println("No of Sims '" + Sims.size() + "'.");
     }
 
-    public static void main(String[] args) {
-        /*
-        Connection conn = null;
-        Driver d=new com.mysql.jdbc.Driver();
-        DriverManager.registerDriver(d);
+    public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+
+        Class.forName("com.mysql.jdbc.Driver").newInstance();
 
 
         // Connect to the test database
@@ -305,7 +303,7 @@ public class XMLParser implements Parameters{
             System.out.println("sql Error");
             int j = 6;
         }
-        */
+
 
         //create an instance
         XMLParser dpe = new XMLParser();

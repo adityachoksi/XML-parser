@@ -5,6 +5,17 @@
   <artifactId>XML-Parser</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>XML-Parser</name>
+
+  <dependencies>
+
+      <dependency>
+          <groupId>mysql</groupId>
+          <artifactId>mysql-connector-java</artifactId>
+          <version>5.1.46</version>
+      </dependency>
+      
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -28,13 +39,4 @@
     </plugins>
   </build>
 
-  <dependencies>
-
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.46</version>
-    </dependency>
-
-  </dependencies>
 </project>
