@@ -1,5 +1,6 @@
 
 import java.io.IOException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,12 +15,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.sql.SQLException;
 
 public class XMLParser implements Parameters{
 
@@ -38,14 +33,14 @@ public class XMLParser implements Parameters{
     public void runParser() {
 
         //parse the xml file and get the dom object
-        //parseXmlFile("data/mains243.xml");
+        parseXmlFile("data/mains243.xml");
 
         //get each employee element and create a Employee object
-        //parseMovies();
+        parseMovies();
 
-        //parseXmlFile("data/actors63.xml");
+        parseXmlFile("data/actors63.xml");
 
-        //parseStars();
+        parseStars();
 
         parseXmlFile("data/casts124.xml");
 
@@ -277,7 +272,8 @@ public class XMLParser implements Parameters{
     private void printData() {
 
         //Iterator<Movie> it = Movies.iterator();
-        Iterator<Sim> it = Sims.iterator();
+        //Iterator<Sim> it = Sims.iterator();
+        Iterator<Star> it = Stars.iterator();
         while (it.hasNext()) {
             System.out.println(it.next().toString());
         }
@@ -285,6 +281,13 @@ public class XMLParser implements Parameters{
     }
 
     public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+
+
+        //create an instance
+        XMLParser dpe = new XMLParser();
+
+        //call run example
+        dpe.runParser();
 
         Class.forName("com.mysql.jdbc.Driver").newInstance();
 
@@ -294,22 +297,137 @@ public class XMLParser implements Parameters{
             Connection connection = DriverManager.getConnection("jdbc:" + Parameters.dbtype + ":///" + Parameters.dbname + "?autoReconnect=true&useSSL=false",
                     Parameters.username, Parameters.password);
 
+            int count
             if (connection != null) {
                 System.out.println("Connection established!!");
                 System.out.println();
+
+                Iterator<Star> it = dpe.Stars.iterator();
+                String starname = "";
+                int birthyear = -1;
+                Star s;
+                int result;
+
+                // debug variables
+                int failcount = 0;
+                int successcount = 0;
+
+                CallableStatement addStar = connection.prepareCall("call add_star(?,?)");
+                while (it.hasNext()) {
+                    s = it.next();
+                    starname = s.getName();
+                    birthyear = s.getBirthyear();
+                    //System.out.println("name: " + starname);
+
+                    //System.out.println("done w preparecall");
+                    addStar.setString(1,starname);
+                    addStar.setInt(2,birthyear);
+                    //System.out.println("done w params");
+                    //System.out.println(addStar.getParameterMetaData().getParameterMode(2));
+                    //addStar.registerOutParameter(3,Types.INTEGER);
+                    //System.out.println("done w outparam");
+                    addStar.addBatch();
+                    //System.out.println("done executing");
+                    /*
+                    result = addStar.getInt(3);
+                    if(result == 1){
+                        successcount++;
+                        //System.out.println("SUCCESS: added star");
+                    }else{
+                        failcount++;
+                        //System.out.println("Failure: didn't add star");
+                    }*/
+                }
+                addStar.executeBatch();
+                //System.out.println("number of SUCCESS: added star = " + successcount);
+                //System.out.println("number of FAILURE: added star = " + failcount);
+
+                System.out.println("done w stars");
+                successcount = 0;
+                failcount = 0;
+
+                Iterator<Movie> it1 = dpe.Movies.iterator();
+                String MovieTitle;
+                int MovieYear;
+                String MovieDirector;
+                String MovieGenre;
+                Movie m;
+                CallableStatement addMovie = connection.prepareCall("call add_movie_simple(?,?,?,?)");
+                while (it1.hasNext()) {
+                    m = it1.next();
+                    MovieTitle = m.getTitle();
+                    MovieYear = m.getYear();
+                    MovieDirector = m.getDirector();
+                    MovieGenre = m.getGenre();
+                    addMovie.setString(1,MovieTitle);
+                    addMovie.setInt(2,MovieYear);
+                    addMovie.setString(3,MovieDirector);
+                    addMovie.setString(4,MovieGenre);
+                    //addMovie.registerOutParameter(5,Types.INTEGER);
+                    addMovie.addBatch();
+                    /*
+                    result = addMovie.getInt(5);
+                    if(result == 1){
+                        successcount++;
+                        //System.out.println("SUCCESS: added movie");
+                    }else{
+                        failcount++;
+                        //System.out.println("Failure: didn't add movie");
+                    }*/
+
+                }
+                addMovie.executeBatch();
+                System.out.println("done w movies");
+                //System.out.println("number of SUCCESS: added movie = " + successcount);
+                //System.out.println("number of FAILURE: added movie = " + failcount);
+
+
+                successcount = 0;
+                failcount = 0;
+
+                Iterator<Sim> it2 = dpe.Sims.iterator();
+                Sim sm;
+                int no_som = 0;
+                CallableStatement addLink = connection.prepareCall("call link_movie_star(?,?)");
+                while(it2.hasNext()){
+                    sm = it2.next();
+                    starname = sm.getStar();
+                    MovieTitle = sm.getMovie();
+                    addLink.setString(1,MovieTitle);
+                    addLink.setString(2,starname);
+                    //addLink.registerOutParameter(3,Types.INTEGER);
+                    addLink.addBatch();
+                    /*
+                    result = addLink.getInt(3);
+                    if(result == 1){
+                        successcount++;
+                        //System.out.println("SUCCESS: added movie");
+                    }else if(result == 1){
+                        failcount++;
+                        //System.out.println("Failure: didn't add movie");
+                    }else{
+                        no_som++;
+                    }*/
+
+                }
+                addLink.executeBatch();
+                System.out.println("done w link");
+            //    System.out.println("number of SUCCESS: added link = " + successcount);
+            //    System.out.println("number of FAILURE: added link = " + failcount);
+            //    System.out.println("number of FAILURE (no star or movie): added link = " + no_som);
+
+
+
+
             }
         }
         catch(Exception e){
+            System.out.println(e.getMessage());
             System.out.println("sql Error");
             int j = 6;
         }
 
 
-        //create an instance
-        XMLParser dpe = new XMLParser();
-
-        //call run example
-        dpe.runParser();
     }
 
 }
