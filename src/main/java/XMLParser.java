@@ -300,6 +300,7 @@ public class XMLParser implements Parameters{
             if (connection != null) {
                 System.out.println("Connection established!!");
                 System.out.println();
+            connection.close();
             }
         }
         catch(Exception e){
