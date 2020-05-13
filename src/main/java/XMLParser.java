@@ -573,6 +573,8 @@ public class XMLParser implements Parameters{
             System.out.println(e.getMessage());
         }
 
+        writer.close();
+
 
     }
 
